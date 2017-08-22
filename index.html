@@ -23,8 +23,7 @@
 	
 
 	<div id ="container">
-		<h1>Web audio analyzer and MIR application</h1>
-		<!-- <h4>instant RMS peaks and 2024 sample buffer peaks.</h4> -->
+	    <h1>Web audio analyzer and MIR application</h1>
 			
 	    <p>Select an audio file and hit play button.</p>
 	    <input id="fileselector" type="file" accept="audio/*">
@@ -219,6 +218,7 @@
 	var source;
 	var mediaElements = new WeakMap();
 
+	// initialize the webaudio context and parameters
 	var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 	var processor = audioContext.createScriptProcessor(2048, 2, 2); // 256, 512, 1024, 2048, 4096, 8192, 16384
 	var analyserBars = audioContext.createAnalyser();
