@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="description" content="Free web audio analyzer and MIR application">
+	<meta name="keywords" content="mir,web audio api,audio features,music audio features">
+	<meta name="author" content="Paolo Cristofoli">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>
+		Web audio analyzer and MIR application	
+	</title>
+
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+
+</head>
+
+<body>
+
+	
+	<audio id="audiotag" preload="none" controls>
+	your browser doesn't support audio tag
+	</audio>
+	
+
+	<div id ="container">
+		<h1>Web audio analyzer and MIR application</h1>
+		<!-- <h4>instant RMS peaks and 2024 sample buffer peaks.</h4> -->
+			
+	    <p>Select an audio file and hit play button.</p>
+	    <input id="fileselector" type="file" accept="audio/*">
+	    
+
+		<br><br>
+		
+		<div id="metersWrapper">
+		<div id="left">
+			<h4>RMS meter</h4>
+			<span class="meterLabels">L</span><meter id="RMSmeterL" min="-60" low="-60" high="-2" value='-60' max='0'></meter>
+			<span class="meterLabels" id="LrmsPeak_tag"></span>
+			<br>
+			<span class="meterLabels">R</span><meter id="RMSmeterR" min="-60" low="-60" high="-2" value='-60' max='0'></meter>
+			<span class="meterLabels" id="RrmsPeak_tag"></span><br>
+			<br>
+		</div>
+
+		<div id="right">
+			<h4>Peak</h4>
+			<span class="meterLabels">L </span><meter class="invisible"></meter>
+			<span class="meterLabels" id="LPeak_tag"></span><br>
+			<span class="meterLabels">R </span><meter class="invisible"></meter>
+			<span class="meterLabels" id="RPeak_tag"></span><br>
+			<br>
+		</div>
+		<div id="buttons">
+			<button id="resetPeaksBtn">RESET PEAKS</button>
+		</div>
+		</div>
+
+
+		<form>
+	       <fieldset id="fields">
+	          <legend>Select features star position:</legend>
+	          
+	             <label>3: </label>
+	             <select id = "3" onchange="checkFTselection(event)";>
+	               <option value = "rms">rms</option>
+	               <option value = "energy" selected>energy</option>
+	               <option value = "zcr">zcr</option>
+	               <option value = "flatness">flatness</option>
+	               <option value = "slope">slope</option>
+	               <option value = "centroid">centroid</option>
+	               <option value = "rolloff">rolloff</option>
+	               <option value = "spread">spread</option>
+	               <option value = "skewness">skewness</option>
+	               <option value = "kurtosis">kurtosis</option>
+	               <option value = ""></option>               
+	             </select>
+	             <label>2: </label>
+	             <select id = "2" onchange="checkFTselection(event)";>
+	               <option value = "rms" selected>rms</option>
+	               <option value = "energy">energy</option>
+	               <option value = "zcr">zcr</option>
+	               <option value = "flatness">flatness</option>
+	               <option value = "slope">slope</option>
+	               <option value = "centroid">centroid</option>
+	               <option value = "rolloff">rolloff</option>
+	               <option value = "spread">spread</option>
+	               <option value = "skewness">skewness</option>
+	               <option value = "kurtosis">kurtosis</option>
+	               <option value = ""></option>               
+	             </select>
+	              <label>4: </label>
+	             <select id = "4" onchange="checkFTselection(event)";>
+	               <option value = "rms">rms</option>
+	               <option value = "energy">energy</option>
+	               <option value = "zcr">zcr</option>
+	               <option value = "flatness">flatness</option>
+	               <option value = "slope">slope</option>
+	               <option value = "centroid" selected>centroid</option>
+	               <option value = "rolloff">rolloff</option>
+	               <option value = "spread">spread</option>
+	               <option value = "skewness">skewness</option>
+	               <option value = "kurtosis">kurtosis</option>
+	               <option value = ""></option>               
+	             </select>        
+	             <label>1: </label>
+	             <select id = "1" onchange="checkFTselection(event)";>
+	               <option value = "rms">rms</option>
+	               <option value = "energy">energy</option>
+	               <option value = "zcr" selected>zcr</option>
+	               <option value = "flatness">flatness</option>
+	               <option value = "slope">slope</option>
+	               <option value = "centroid">centroid</option>	               
+	               <option value = "rolloff">rolloff</option>
+	               <option value = "spread">spread</option>
+	               <option value = "skewness">skewness</option>
+	               <option value = "kurtosis">kurtosis</option>
+	               <option value = ""></option>               
+	             </select>
+	             <label>5: </label>
+	             <select id = "5" onchange="checkFTselection(event)";>
+	               <option value = "rms">rms</option>
+	               <option value = "energy">energy</option>
+	               <option value = "zcr">zcr</option>
+	               <option value = "flatness">flatness</option>
+	               <option value = "slope">slope</option>
+	               <option value = "centroid">centroid</option>	               
+	               <option value = "rolloff" selected>rolloff</option>
+	               <option value = "spread">spread</option>
+	               <option value = "skewness">skewness</option>
+	               <option value = "kurtosis">kurtosis</option>
+	               <option value = ""></option>
+	             </select>             
+	       </fieldset>
+	    </form>
+	    <br>
+
+		
+		<canvas id="canvasStar" width="600" height="512"></canvas>	
+		<br>
+		<div id="numbers">
+			<table class="features">
+				<thead>
+				<tr>
+					<th colspan="5">All features results</th>
+				</tr>
+				</thead>
+				<tr>
+				  <td>rms:<div id="rms_tag"></div></td>
+				  <td>energy:<div id="energy_tag"></div></td>
+				  <td>zcr:<div id="zcr_tag"></div></td>
+				  <td>centroid hz:<div id="centroid_tag"></div></td>
+				  <td>flatness:<div id="flatness_tag"></div></td>
+				</tr>
+				<tr>
+				  <td>slope:<div id="slope_tag"></div></td>
+				  <td>rolloff hz:<div id="rolloff_tag"></div></td>
+				  <td>spread:<div id="spread_tag"></div></td>
+				  <td>skewness:<div id="skewness_tag"></div></td>
+				  <td>kurtosis:<div id="kurtosis_tag"></div></td>
+				</tr>
+			</table>
+		</div>
+		<br>
+
+
+
+		<div class="canvasLabels">Spectrum analyzer</div>
+		<canvas id="canvasBars" width="600" height="512"></canvas>
+		<!-- background-color: rgb(111, 111, 111); -->
+		<br>
+		<canvas id="canvasBarsCAPT" width="600" height="30"></canvas>	
+		<!-- <div id="visualisation"></div> -->
+		<div class="canvasLabels">Spectrogram</div>
+		<canvas id="canvasSpectro" width="600" height="512" moz-opaque></canvas>
+
+		
+
+	</div>
+
+	<footer>
+		Copyright (c) 2017 Paolo Cristofoli
+	</footer>
+</body>
+
+<script type="text/javascript" src="js/jquery-2.2.4.min.js"></script>
+<script type="text/javascript" src="js/chroma.min.js"></script>
+<script type="text/javascript" src="js/drawStars.js"></script>
+<script type="text/javascript" src="js/extractors.js"></script>
+
+
+<script>
+	$(window).scroll(function(){
+	 	$("#audiotag").css({"margin-top": ($(window).scrollTop()) + "px"});  
+	});
+
+
+	var RMSmeterL = $("#RMSmeterL").get()[0];
+	var RMSmeterR = $("#RMSmeterR").get()[0];
+	var RMSmeterLpeak = $("#LrmsPeak_tag").get()[0];
+	var RMSmeterRpeak = $("#RrmsPeak_tag").get()[0];
+
+	var PEAKmeterLpeak = $("#LPeak_tag").get()[0];
+	var PEAKmeterRpeak = $("#RPeak_tag").get()[0];
+
+	var rmsmeter = $("#rms_tag").get()[0];
+	var energymeter = $("#energy_tag").get()[0];
+	var zcrmeter = $("#zcr_tag").get()[0];
+	var centroidmeter = $("#centroid_tag").get()[0];
+	var flatnessmeter = $("#flatness_tag").get()[0];
+	var slopemeter = $("#slope_tag").get()[0];
+	var rolloffmeter = $("#rolloff_tag").get()[0];
+	var spreadmeter = $("#spread_tag").get()[0];
+	var skewnessmeter = $("#skewness_tag").get()[0];
+	var kurtosismeter = $("#kurtosis_tag").get()[0];
+
+	var audioElement = $("#audiotag").get()[0];
+	var fileSelector = $("#fileselector").get()[0];
+	var source;
+	var mediaElements = new WeakMap();
+
+	var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+	var processor = audioContext.createScriptProcessor(2048, 2, 2); // 256, 512, 1024, 2048, 4096, 8192, 16384
+	var analyserBars = audioContext.createAnalyser();
+	var analyserSpectro = audioContext.createAnalyser();
+	analyserBars.smoothingTimeConstant = 0.9;
+	analyserBars.fftSize = 512; // divided by 2 = number of frequency 'bars' = frequencyBinCount
+	analyserBars.maxDecibels = 0;
+	analyserBars.minDecibels = -90;
+	analyserSpectro.fftSize = 1024; // 1024 for spectrogram, that is 512 different frequencies each with relative amplitude
+	analyserSpectro.maxDecibels = 0;
+	analyserSpectro.minDecibels = -90;
+	analyserSpectro.smoothingTimeConstant = 0; // I need a drawing with no smooth movements
+
+
+
+	$("#resetPeaksBtn").get()[0].onclick = function(){
+		resetPeaks();
+	};
+
+	fileSelector.onclick = function(){
+		audioElement.pause();
+	};
+
+	fileSelector.onchange = function(ev){		
+    	var file = ev.currentTarget.files[0];
+    	var objectUrl = URL.createObjectURL(file);
+    	audioElement.src = objectUrl;
+    	
+    	processor.disconnect();
+
+		if (mediaElements.has(audioElement)) {
+		    source = mediaElements.get(audioElement);
+		} else {
+		    source = audioContext.createMediaElementSource(audioElement);
+		    mediaElements.set(audioElement, source);
+		}
+
+		source.connect(analyserBars); // no need to further connect to destination
+		source.connect(analyserSpectro); // no need to further connect to destination
+
+	    source.connect(processor);
+	    source.connect(audioContext.destination);
+	    processor.connect(audioContext.destination); // it's needed for Chrome because otherwise onaudioprocess won't work
+	    //console.log(audioContext.sampleRate);
+	    // (Sample Rate)/(FFT Size) = (Band Size)
+
+	    resetPeaks();
+
+	};
+
+
+	var canvasBars = $("#canvasBars").get()[0];
+	var canvasBarsCTX = canvasBars.getContext("2d");
+	var canvasSpectro = $("#canvasSpectro").get()[0];
+	var canvasSpectroCTX = canvasSpectro.getContext("2d");
+	var canvasStar = $("#canvasStar").get()[0];
+	var canvasStarCTX = canvasStar.getContext("2d");
+	canvasStarCTX.fillStyle = "white";
+	canvasStarCTX.font = ("12px Arial");
+	canvasStarCTX.lineWidth = 2;
+
+
+	// create a dummy canvas
+	var tempCanvas = document.createElement("canvas");
+	var tempCtx = tempCanvas.getContext("2d");
+	tempCanvas.width = 600;
+	tempCanvas.height = 512;
+	
+	// set spectrogram colors gradient
+	var hot = new chroma.ColorScale({
+	    colors:['#000000', '#ff0000', '#ffff00', '#ffffff'],
+	    // black,red,yellow,white->from less power to more power
+	    positions:[0, .25, .50, 0.85],
+	    mode:'rgb',
+	    limits:[0, 300]
+	});
+
+	var rmsLPeak = rmsRPeak = -60;
+	var LPeak = RPeak = -60;
+
+	// initialize array for positioning hz captions
+	var hzLegend = [];
+	hzLegend.push({hz: 0, xpos: 0,});
+	hzLegend.push({hz: 50, xpos: 0,});
+	hzLegend.push({hz: 70, xpos: 0,});
+	hzLegend.push({hz: 100, xpos: 0,});
+	hzLegend.push({hz: 200, xpos: 0,});
+	hzLegend.push({hz: 300, xpos: 0,});
+	hzLegend.push({hz: 500, xpos: 0,});
+	hzLegend.push({hz: 700, xpos: 0,});
+	hzLegend.push({hz: 1000, xpos: 0,});
+	hzLegend.push({hz: 2000, xpos: 0,});
+	hzLegend.push({hz: 3000, xpos: 0,});
+	hzLegend.push({hz: 5000, xpos: 0,});
+	hzLegend.push({hz: 7000, xpos: 0,});
+	hzLegend.push({hz: 10000, xpos: 0,});
+	hzLegend.push({hz: 20000, xpos: 0,});
+
+	var xpos = [];
+	var bandSize = audioContext.sampleRate/analyserBars.fftSize;
+	var bandProgress;
+	//console.log(bandSize);
+
+	// build array for x positions
+	for (var i = 0; i < analyserBars.frequencyBinCount; i++) {
+		if (i == 0) {
+			xpos[i] = 0;
+			} else {
+			xpos[i] = Math.round(canvasBars.width * logbase(i+1,analyserBars.frequencyBinCount)); //OK log spacing
+		}
+
+		bandProgress = i * bandSize;
+		//console.log("x: " + xpos[i] + " i:" + i)
+
+		var index = 0;
+		var leftBound = rightBound = leftBoundX = rightBoundX = 0;
+		while (index < hzLegend.length) { //&& (hzLegend[index].xpos == 0)) 
+			if ((hzLegend[index].hz >= bandProgress) && (hzLegend[index].hz < (bandProgress+bandSize)) && (hzLegend[index].xpos == 0)) {
+				leftBound = bandProgress;
+				rightBound = bandProgress + bandSize;
+				leftBoundX = xpos[i];
+				rightBoundX = Math.round(canvasBars.width * logbase(i+2,analyserBars.frequencyBinCount));
+
+				var prop = (hzLegend[index].hz - leftBound) / bandSize;
+				var propX = (rightBoundX-leftBoundX) * prop;
+				hzLegend[index].xpos = Math.round(leftBoundX + propX);
+			}
+			//console.log(hzLegend[index].hz);
+			index++;
+		}
+	}
+	
+	//hzLegend.forEach(d => console.log(d));
+	var canvasBarsCAPT = $("#canvasBarsCAPT").get()[0];
+	var canvasBarsCAPTCTX = canvasBarsCAPT.getContext("2d");
+	//canvasBarsCTX.fillStyle = "grey"; //"#BFBFBF"; //
+
+	// draw captions for frequency analyzer canvas
+	hzLegend.forEach(function(element) {
+		if (element.hz >= 1000){element.hz = (element.hz/1000) + "k";}
+		canvasBarsCAPTCTX.fillText(element.hz, element.xpos-8, (canvasBarsCAPT.height / 2));
+		canvasBarsCAPTCTX.fillRect(element.xpos-1, 0, 1, (canvasBarsCAPT.height / 5));
+		//canvasBarsCTX.fillRect(element.xpos-1, 0, 1, (canvasBars.height)); //
+	});
+
+
+	// inizialize feature data
+	var result = {
+		zcr: {pos: 1, val: 0},
+		rms: {pos: 2, val: -60},
+		energy: {pos: 3, val: 0},
+		flatness: {pos: 8, val: 0},
+		rolloff: {pos: 5, val: 0},	
+		skewness: {pos: 6, val: -1},	
+		kurtosis: {pos: 7, val: 5},
+		centroid: {pos: 4, val: 0},
+		spread: {pos: 9, val: -10},	
+		slope: {pos: 10, val: 0},	
+	};
+
+	penta(canvasStar, canvasStarCTX, 5, 140, result, false, true); //draw full star at first
+
+	processor.onaudioprocess = function(evt) {
+		//console.log("processing...");
+		var inputL = evt.inputBuffer.getChannelData(0);
+	  	var inputR = evt.inputBuffer.getChannelData(1);
+	  	var inputCombined = [];
+	  	var zcr = energy = 0;
+		var  totalL = 0;
+		var  totalR = 0;
+		var  rmsL,rmsR,peakL,peakR;
+		
+		for (var i = 0; i < processor.bufferSize; i++) {
+		    totalL += Math.pow(inputL[i],2);
+			peakL = roundDecimal((20*Math.log(Math.max(Math.abs(inputL[i]),Math.pow(10,-60/20)))/Math.LN10),1);
+			
+			if (peakL > LPeak) {
+				PEAKmeterLpeak.innerHTML=" " + peakL;
+				LPeak = peakL;
+			}
+		
+			totalR += Math.pow(inputR[i],2); //as meyda
+			
+			peakR = roundDecimal((20*Math.log(Math.max(Math.abs(inputR[i]),Math.pow(10,-60/20)))/Math.LN10),1);
+			
+			if (peakR > RPeak) {
+				PEAKmeterRpeak.innerHTML = " " + peakR;
+				RPeak = peakR;
+			}
+
+			// zcr summed for R and L
+			inputCombined[i] = (inputL[i] + inputR[i]) * 0.5; // mean
+			if (i!=0) {
+		 		if ((inputCombined[i] >= 0 && inputCombined[i-1] < 0) || (inputCombined[i] < 0 && inputCombined[i-1] >= 0)) {
+		      		zcr++;
+		    	}
+		    	energy += Math.pow(Math.abs(inputCombined[i]),2);
+	    	}
+
+		}
+
+		rmsL = Math.sqrt(totalL / processor.bufferSize);
+		rmsR = Math.sqrt(totalR / processor.bufferSize);
+
+		result.energy.val = roundDecimal(energy,3);
+		energymeter.innerHTML = result.energy.val;
+		result.zcr.val = roundDecimal(zcr / processor.bufferSize,3);
+		zcrmeter.innerHTML = result.zcr.val;
+		
+		//get rms in decibel:
+		RMSmeterL.value = roundDecimal((20*Math.log(Math.max(rmsL,Math.pow(10,-60/20)))/Math.LN10),1);
+		RMSmeterR.value = roundDecimal((20*Math.log(Math.max(rmsR,Math.pow(10,-60/20)))/Math.LN10),1);
+		
+		result.rms.val = roundDecimal((RMSmeterL.value+RMSmeterR.value)/2,1);
+		rmsmeter.innerHTML = result.rms.val;
+		
+		if (RMSmeterL.value > rmsLPeak) {
+			RMSmeterLpeak.innerHTML=RMSmeterL.value;
+			rmsLPeak = RMSmeterL.value;
+		}
+		if (RMSmeterR.value > rmsRPeak) {
+			RMSmeterRpeak.innerHTML=RMSmeterR.value;
+			rmsRPeak = RMSmeterR.value;
+		}
+	  
+
+		//for freq analyzer:
+		var frequencyData = new Uint8Array(analyserBars.frequencyBinCount); // Uint8Array: values from 0 to 255 depending on decibelmin and decibelmax variables
+	    analyserBars.getByteFrequencyData(frequencyData); //getByteFrequencyData or getFloatFrequencyData if Float32Array
+		canvasBarsCTX.clearRect(0, 0, canvasBars.width, canvasBars.height);
+
+	    // Update the visualisation
+		//canvasBarsCTX.strokeStyle=black;
+		canvasBarsCTX.fillStyle = "rgba(89, 199, 62,0.8)";
+		canvasBarsCTX.strokeStyle = "lightgrey";
+		canvasBarsCTX.beginPath();
+		canvasBarsCTX.moveTo(0,canvasBars.height);
+		var value,percent,barHeight,ypos,xposprev;
+
+		for (var i = 0; i < analyserBars.frequencyBinCount; i++) { //frequencyData.length
+			value = frequencyData[i];
+
+			percent = value / 255; //255 is max level
+			barHeight = canvasBars.height * percent;
+			ypos = canvasBars.height - barHeight;
+
+			// only draw a line if it's in different position to the previous one
+			if (xpos[i] !== xposprev) {
+				canvasBarsCTX.lineTo(xpos[i], ypos);
+				canvasBarsCTX.stroke();
+			}
+
+			xposprev = xpos[i];
+		}
+
+		canvasBarsCTX.lineTo(xpos[i-1], canvasBars.height); //close the last freq line at y baseline
+		canvasBarsCTX.closePath();
+		canvasBarsCTX.fill();
+
+		result.centroid.val = Math.round(centroid(1, frequencyData) * bandSize);
+		centroidmeter.innerHTML = result.centroid.val;
+		result.flatness.val = roundDecimal(flatness(frequencyData),3);
+		flatnessmeter.innerHTML = result.flatness.val;
+		
+		result.slope.val = (slope(frequencyData));
+
+		slopemeter.innerHTML = result.slope.val;
+		result.rolloff.val = roundDecimal(rolloff(frequencyData),0);
+		if (result.rolloff.val == 22050) result.rolloff.val = NaN;
+		rolloffmeter.innerHTML = result.rolloff.val;
+		result.spread.val = roundDecimal(spread(frequencyData),3);
+		spreadmeter.innerHTML = result.spread.val;
+		result.skewness.val = roundDecimal(skewness(frequencyData),3);
+		skewnessmeter.innerHTML = result.skewness.val;
+		result.kurtosis.val = roundDecimal(kurtosis(frequencyData),3);
+		kurtosismeter.innerHTML = result.kurtosis.val;
+		
+
+		var frequencyDataSpectro = new Uint8Array(analyserSpectro.frequencyBinCount);
+	    analyserSpectro.getByteFrequencyData(frequencyDataSpectro);
+
+		if (!audioElement.paused && audioElement.duration > 0) {
+	    	drawSpectrogram(frequencyDataSpectro);
+		}
+
+		penta(canvasStar, canvasStarCTX, 5, 140,
+			//result.energy.val.map(0,1058,0,-0.866),
+			result,
+			false,
+			false);
+	}
+
+	function drawSpectrogram(array) {
+		// http://www.smartjava.org/content/exploring-html5-web-audio-visualizing-sound
+        // copy the current canvas onto the temp canvas
+        tempCtx.drawImage(canvasSpectro, 0, 0, canvasSpectro.width, canvasSpectro.height); //600,512
+ 
+        for (var i = 0; i < array.length; i++) {
+            // draw each pixel with the specific color
+            var value = array[i];
+            canvasSpectroCTX.fillStyle = hot.getColor(value).hex();
+            // draw at the right side
+            canvasSpectroCTX.fillRect(canvasSpectro.width - 1, canvasSpectro.height - i, 1, 1);
+        }
+ 
+        canvasSpectroCTX.translate(-1, 0);
+        canvasSpectroCTX.drawImage(tempCanvas, 0, 0, canvasSpectro.width, canvasSpectro.height, 0, 0, canvasSpectro.width, canvasSpectro.height);
+        // reset the transformation matrix
+        canvasSpectroCTX.setTransform(1, 0, 0, 1, 0, 0);
+	}
+
+	function checkFTselection(e) {
+		//set to "" if other fields have same selected value
+		$("#fields > select").each(function() {
+		    //console.log($(this).val() + " " + $(this).attr('id'));
+		    if ($(this).attr('id') != e.target.id) {
+		    	if ($(this).val() == e.target.value) {
+		    		$(this).prop("value","");
+		    	}
+		    }
+		});
+
+		//move away the previous element with same position
+		for (x in result) {
+			if (result[x].pos == parseInt(e.target.id)) result[x].pos = 10; 
+		}
+
+		switch (e.target.value) {
+            case "rms":
+            	result.rms.pos = parseInt(e.target.id);
+                break;
+            case "energy":
+				result.energy.pos = parseInt(e.target.id);
+                break;
+            case "zcr":
+            	result.zcr.pos = parseInt(e.target.id);
+                break;
+            case "centroid":
+            	result.centroid.pos = parseInt(e.target.id);
+                break;
+            case "flatness":
+				result.flatness.pos = parseInt(e.target.id);
+                break;
+            case "slope":
+				result.slope.pos = parseInt(e.target.id);
+                break;
+            case "rolloff":
+				result.rolloff.pos = parseInt(e.target.id);
+                break;
+            case "spread":
+				result.spread.pos = parseInt(e.target.id);
+                break;
+            case "skewness":
+				result.skewness.pos = parseInt(e.target.id);
+                break;
+            case "kurtosis":
+				result.kurtosis.pos = parseInt(e.target.id);
+        }
+	    
+	    penta(canvasStar, canvasStarCTX, 5, 140, result, false, false);
+	}
+
+	function resetPeaks() {
+		PEAKmeterRpeak.innerHTML = " ";
+		PEAKmeterLpeak.innerHTML = " ";
+		RMSmeterRpeak.innerHTML = "";
+		RMSmeterLpeak.innerHTML = "";
+		rmsLPeak = rmsRPeak = -60;
+		LPeak = RPeak = -60;
+	}
+
+	function roundDecimal(number, precision) {
+		//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round
+		// precision 1=first decimal. -1 ten
+	    var factor = Math.pow(10, precision);
+	    var tempNumber = number * factor;
+	    var roundedTempNumber = Math.round(tempNumber);
+	    return roundedTempNumber / factor;
+	};
+
+	function logbase(n, base) {
+		// log with specific base. if not specified does the ln
+	    return Math.log(n)/(base ? Math.log(base) : 1);
+	  };
+
+
+</script>
+
+</html>
