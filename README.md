@@ -1,5 +1,5 @@
 # webaudioanalyzer
-Web audio analyzer and MIR application
+Web audio analyzer and MIR application.
 
 This is a web application, part of my bacherlor's thesis project, that allows to analyse and visualise some important properties of a digital audio signal.
 
